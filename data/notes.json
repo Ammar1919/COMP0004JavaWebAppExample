@@ -1,0 +1,38 @@
+{
+  "notes" : [ {
+    "name" : "Regular Languages",
+    "text" : "lets go",
+    "URL" : "",
+    "imageURL" : "",
+    "timeAdded" : "11:00 06/03/2025",
+    "timeEdited" : "2025-03-10T19:27:00.406970260"
+  }, {
+    "name" : "Object Oriented Programming",
+    "text" : "Polymorphism https://en.wikipedia.org/wiki/Object-oriented_programming",
+    "URL" : "",
+    "imageURL" : "",
+    "timeAdded" : "2025-03-10T12:15:02.049370363",
+    "timeEdited" : "2025-03-11T15:31:37.047628123"
+  }, {
+    "name" : "Principles of Programming",
+    "text" : "Pointers and Structs",
+    "URL" : "",
+    "imageURL" : null,
+    "timeAdded" : "2025-03-11T15:54:16.043301982",
+    "timeEdited" : "2025-03-11T15:54:16.043348359"
+  }, {
+    "name" : "Hello",
+    "text" : "Testing",
+    "URL" : "",
+    "imageURL" : null,
+    "timeAdded" : "2025-03-11T15:54:26.415163053",
+    "timeEdited" : "2025-03-11T15:54:26.415202048"
+  }, {
+    "name" : "Design and Professional Skills",
+    "text" : "Ethics Report on SAP",
+    "URL" : "",
+    "imageURL" : null,
+    "timeAdded" : "2025-03-11T15:56:33.603399786",
+    "timeEdited" : "2025-03-11T15:56:33.603480571"
+  } ]
+}
