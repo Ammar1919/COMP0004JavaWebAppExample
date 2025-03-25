@@ -1,160 +1,169 @@
 package uk.ac.ucl.model;
 
-import java.io.FileNotFoundException;
-import java.io.Reader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.nio.file.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.servlet.RequestDispatcher;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import javax.management.RuntimeErrorException;
 import java.io.File;
-import java.util.Iterator;
 
 import java.time.LocalDateTime;
 
-public class Note {
-    private final ObjectMapper objectMapper;
-    private final String fileName;
+import java.util.UUID;
+import jakarta.servlet.http.Part;
+import java.io.InputStream;
 
-    public Note(String fileName){
-        this.objectMapper = new ObjectMapper();
-        this.fileName = fileName;
+
+public class Note extends DataHandler{
+    private static final String IMAGE_UPLOAD_PATH = "src/main/webapp/resources/uploads/images";
+
+    public Note(String fileName) {
+        super(fileName);
+        File uploadDir = new File(IMAGE_UPLOAD_PATH);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
     }
 
-    public ArrayNode getNotesArray() throws IOException{
-        JsonNode rootNode = objectMapper.readTree(new File(fileName));
-        ArrayNode notesArray;
-        try {
-            notesArray = (ArrayNode) rootNode.get("notes");
-        }
-        catch (NullPointerException e){
-            throw new RuntimeException("'notes' field does not exist in " + fileName);
-        }
-        return notesArray;
+    public ArrayNode getNotesArray() {
+        return getArray("notes");
     }
 
-    public Map<String, String> getNote(String noteId) throws IOException {
-        //Formerly JsonNode
-        ArrayNode notesArray = getNotesArray();
-        Map<String, String> noteContent = new HashMap<String, String>();
-        for (JsonNode note : notesArray) {
-            if (note.get("name").asText().equals(noteId)) {
-                noteContent.put("name", note.get("name").asText());
-                noteContent.put("text", note.get("text").asText());
-                noteContent.put("url", note.get("URL").asText());
-                noteContent.put("timeAdded", note.get("timeAdded").asText());
-                break;
-            }
+    public Map<String, String> getNote(ArrayNode notesArray, String noteId) {
+        Map<String, String> noteContent = new HashMap<>();
+        int i = matchItemById(notesArray, noteId);
+        if (i == -1 || i >= notesArray.size()) {
+            noteContent.put("name", "Note note found");
+            return noteContent;
         }
+        ObjectNode note = (ObjectNode) notesArray.get(i);
+        noteContent.put("name", note.get("name").asText());
+        noteContent.put("text", note.get("text").asText());
+        noteContent.put("imageURL", note.get("imageURL").asText());
+        noteContent.put("timeAdded", note.get("timeAdded").asText());
+        noteContent.put("timeEdited", note.get("timeEdited").asText());
+
         return noteContent;
     }
 
-    public List<Map<String, String>> getAllNotes() throws IOException{
-        ArrayNode notesArray = getNotesArray();
+    public List<Map<String, String>> getAllNotes(ArrayNode notesArray, String sortId) {
         List<Map<String, String>> allNotes = new ArrayList<>();
+        Sort sort = new Sort();
         for (JsonNode note : notesArray){
             String noteId = note.get("name").asText();
-            allNotes.add(getNote(noteId));
+            allNotes.add(getNote(notesArray, noteId));
+        }
+        if (sortId!=null){
+            if (Integer.parseInt(sortId) < 2){
+                sort.sortNotesByTime(allNotes, sortId);
+            }
+            else {
+                sort.sortNotesByAlphabet(allNotes, sortId);
+            }
         }
         return allNotes;
     }
 
-    public void addNote(Map<String, String> fields) throws IOException {
-        ArrayNode notesArray = getNotesArray();
+    public String saveImage(Part filePart) throws IOException {
+        if (filePart == null || filePart.getSize() == 0) {
+            return null;
+        }
+        String fileName = UUID.randomUUID() + getFileExtension(filePart);
+        String filePath = IMAGE_UPLOAD_PATH + fileName;
+        try (InputStream input = filePart.getInputStream()) {
+            Files.copy(input, Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+        }
+        return filePath;
+    }
 
+    private String getFileExtension(Part part) {
+        String contentDisp = part.getHeader("content-disposition");
+        String[] items = contentDisp.split(";");
+        for (String item : items) {
+            if (item.trim().startsWith("filename")) {
+                String fileName = item.substring(item.indexOf("=") + 2, item.length() - 1);
+                int dotIndex = fileName.lastIndexOf(".");
+                if (dotIndex > 0) {
+                    return fileName.substring(dotIndex);
+                }
+            }
+        }
+        return ".jpg"; 
+    }
+
+
+    public void addNote(ArrayNode notesArray, Map<String, String> fields) {
         try {
-            ObjectNode file = (ObjectNode) objectMapper.readTree(new File(fileName));
-            ObjectNode newNote = newNoteObject(objectMapper, fields);
+            ObjectNode newNote = newNoteObject(fields);
             notesArray.add(newNote);
-            updateNote(file, notesArray);
+            updateFile("notes", notesArray);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void deleteNote(String noteId) throws IOException {
-        ArrayNode notesArray = getNotesArray();
-        ObjectNode file = (ObjectNode) objectMapper.readTree(new File(fileName));
+    public void deleteNote(ArrayNode notesArray, String noteId) {
         try {
-            for (int i = 0; i < notesArray.size(); i++) {
-                JsonNode note = notesArray.get(i);
-                if (note.get("name").asText().equals(noteId)) {
-                    notesArray.remove(i);
-                    break;
-                }
-            }
-            updateNote(file, notesArray);
+            int i = matchItemById(notesArray, noteId);
+            notesArray.remove(i);
+            updateFile("notes", notesArray);
         } catch (IOException e) {
             throw new RuntimeException("Error processing JSON file", e);
         }
     }
 
-    public void editNote(String noteId, String editType, String newContent) throws IOException {
-        ArrayNode notesArray = getNotesArray();
+    public void editNote(ArrayNode notesArray, String noteId, String editType, String newContent, Part editImage) {
         try {
-            ObjectNode file = (ObjectNode) objectMapper.readTree(new File(fileName));
-            ArrayNode editedNotes;
-            if (editType.equals("0")){
-                editedNotes = renameNote(notesArray, noteId, newContent);
-            }
-            else {
-                editedNotes = editNoteBody(notesArray, noteId, newContent);
-            }
-            updateNote(file, editedNotes);
+            int i = matchItemById(notesArray, noteId);
+            ObjectNode note = (ObjectNode) notesArray.get(i);
+            editNoteHelper(note, editType, newContent, editImage);
+            notesArray.set(i, note);
+            updateFile("notes", notesArray);
         } catch (IOException e){
             throw new RuntimeException("Error processing JSON file", e);
         }
     }
 
-    public ArrayNode editNoteBody(ArrayNode notes, String noteId, String newContent) throws IOException{
-        for (int i = 0; i < notes.size(); i++){
-            ObjectNode note = (ObjectNode) notes.get(i);
-            if (note.get("name").asText().equals(noteId)){
-                note.put("text", newContent);
-                note.put("timeEdited", String.valueOf(LocalDateTime.now()));
-                notes.set(i, (JsonNode) note);
-                return notes;
-            }
+    public void editNoteHelper(ObjectNode note, String editType, String newContent, Part editImage) throws IOException {
+        if (editType.equals("0")){
+            note.put("name", newContent);
         }
-        return notes;
-    }
-
-    public ArrayNode renameNote(ArrayNode notes, String noteId, String newContent) throws IOException {
-        for (int i = 0; i < notes.size(); i++){
-            ObjectNode note = (ObjectNode) notes.get(i);
-            if (note.get("name").asText().equals(noteId)){
-                note.put("name", newContent);
-                note.put("timeEdited", String.valueOf(LocalDateTime.now()));
-                notes.set(i, (JsonNode) note);
-                return notes;
-            }
+        else if (editType.equals("1")){
+            note.put("text", newContent);
         }
-        return notes;
+        else {
+            String imageURL = null;
+            if (editImage != null && editImage.getSize() > 0) {
+                imageURL = saveImage(editImage);
+            }
+            note.put("imageURL", imageURL);
+        }
+        note.put("timeEdited", String.valueOf(LocalDateTime.now()));
     }
 
-    public void updateNote(ObjectNode file, ArrayNode notesArray) throws IOException{
-        file.set("notes", notesArray);
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), file);
-    }
-
-    public ObjectNode newNoteObject(ObjectMapper objectMapper, Map<String, String> fields){
+    public ObjectNode newNoteObject(Map<String, String> fields){
         ObjectNode newNote = objectMapper.createObjectNode();
         newNote.put("name", fields.get("name"));
         newNote.put("text", fields.get("text"));
-        newNote.put("URL", fields.get("URL"));
         newNote.put("imageURL", fields.get("imageURL"));
         newNote.put("timeAdded", fields.get("timeAdded"));
         newNote.put("timeEdited", fields.get("timeEdited"));
         return newNote;
+    }
+
+    public String searchInNote(ArrayNode notesArray, String noteId, String query) {
+        int index = matchItemById(notesArray, noteId);
+        if (index == -1){
+            return "Note not found";
+        }
+        ObjectNode note = (ObjectNode) notesArray.get(index);
+        String text = note.get("text").asText().toLowerCase();
+        if (text.contains(query.toLowerCase())){
+            return "Found: " + query;
+        }
+        return query + " is not in this note";
     }
 }

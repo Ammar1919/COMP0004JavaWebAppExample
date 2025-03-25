@@ -18,10 +18,28 @@ public class IndexServlet extends HttpServlet{
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
         Model model = ModelFactory.getModel();
-        List<String> index = model.getIndex();
+        List<String> categoryIndex = model.categoryIndex();
+
+        String categoryId = request.getParameter("categoryId");
+        String searchQuery = request.getParameter("searchQuery");
+        System.out.println("search query " + searchQuery);
+        List<String> index;
+
+        if (categoryId != null) {
+            System.out.println("Getting category notes");
+            index = model.getCategoryNotes(categoryId);
+            request.setAttribute("selectedCategory", categoryId);
+        }
+        else if (searchQuery != null) {
+            index = model.searchNotes(searchQuery);
+        }
+        else {
+            index = model.getIndex();
+        }
 
         request.setAttribute("index", index);
-
+        request.setAttribute("categoryIndex", categoryIndex);
+        request.setAttribute("searchQuery", searchQuery);
 
         ServletContext context = getServletContext();
         RequestDispatcher dispatch = context.getRequestDispatcher("/noteIndex.jsp");

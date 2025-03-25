@@ -1,1 +1,1 @@
-Example Java web application for COMP0004
+Notes Web Application made with Java and Maven for COMP0004 Coursework

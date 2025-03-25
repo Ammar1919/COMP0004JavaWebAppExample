@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Notes App</title>
+  <link rel="stylesheet" type="text/css" href="css/styles.css">
 </head>
 <body>
 <h2>Welcome to your Notes App</h2>
@@ -17,6 +18,13 @@
     </li>
     <li>
       <a href="createNote.jsp">New Note</a>
+    </li>
+    <li>
+      <a onclick="document.getElementById('searchNote').style.display='block'">Search for a Note</a>
+      <form id="searchNote" action="searchNoteServlet" method="post" style="display:none;">
+        <input id="searchQuery" name="searchQuery" value="Enter your query here">
+        <button type="submit">Search</button>
+      </form>
     </li>
   </ul>
 </nav>

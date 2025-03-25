@@ -1,38 +1,41 @@
 {
   "notes" : [ {
-    "name" : "Regular Languages",
-    "text" : "lets go",
-    "URL" : "",
-    "imageURL" : "",
-    "timeAdded" : "11:00 06/03/2025",
-    "timeEdited" : "2025-03-10T19:27:00.406970260"
-  }, {
-    "name" : "Object Oriented Programming",
-    "text" : "Polymorphism https://en.wikipedia.org/wiki/Object-oriented_programming",
-    "URL" : "",
-    "imageURL" : "",
-    "timeAdded" : "2025-03-10T12:15:02.049370363",
-    "timeEdited" : "2025-03-11T15:31:37.047628123"
-  }, {
-    "name" : "Principles of Programming",
-    "text" : "Pointers and Structs",
-    "URL" : "",
+    "name" : "C",
+    "text" : "Professor: Graham Roberts. Topic: Pointers",
     "imageURL" : null,
-    "timeAdded" : "2025-03-11T15:54:16.043301982",
-    "timeEdited" : "2025-03-11T15:54:16.043348359"
+    "timeAdded" : "2025-03-18T16:02:27.927647485",
+    "timeEdited" : "2025-03-23T00:41:28.553165126",
+    "category" : "Term 1"
   }, {
-    "name" : "Hello",
-    "text" : "Testing",
-    "URL" : "",
+    "name" : "OOP",
+    "text" : "Professor: Graham Topic: Polymorphism and Inheritance",
     "imageURL" : null,
-    "timeAdded" : "2025-03-11T15:54:26.415163053",
-    "timeEdited" : "2025-03-11T15:54:26.415202048"
+    "timeAdded" : "2025-03-19T15:07:30.234606770",
+    "timeEdited" : "2025-03-23T00:13:34.033691707"
   }, {
-    "name" : "Design and Professional Skills",
-    "text" : "Ethics Report on SAP",
-    "URL" : "",
+    "name" : "Algorithms CW",
+    "text" : "Optimal BST input for ordinary BSTs: ",
+    "imageURL" : "src/main/webapp/resources/uploads/images1cb018e2-239e-4b54-8ec0-bccd10e96652.png",
+    "timeAdded" : "2025-03-20T12:59:58.099402217",
+    "timeEdited" : "2025-03-23T00:42:33.356871607"
+  }, {
+    "name" : "New Note",
+    "text" : "Test passed",
     "imageURL" : null,
-    "timeAdded" : "2025-03-11T15:56:33.603399786",
-    "timeEdited" : "2025-03-11T15:56:33.603480571"
+    "timeAdded" : "2025-03-21T14:04:33.772691225",
+    "timeEdited" : "2025-03-23T00:44:38.442036678",
+    "category" : "Testing"
+  }, {
+    "name" : "Testing testing",
+    "text" : "mic test",
+    "imageURL" : null,
+    "timeAdded" : "2025-03-21T14:23:50.209731442",
+    "timeEdited" : "2025-03-21T14:23:50.209773038",
+    "category" : "Testing"
+  } ],
+  "categories" : [ {
+    "name" : "Testing",
+    "New Note" : "New Note",
+    "Testing testing" : "Testing testing"
   } ]
 }

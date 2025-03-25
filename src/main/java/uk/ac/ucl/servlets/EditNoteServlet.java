@@ -1,39 +1,34 @@
 package uk.ac.ucl.servlets;
 
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import uk.ac.ucl.model.Model;
 import uk.ac.ucl.model.ModelFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.time.LocalDateTime;
 
 @WebServlet("/editNoteServlet")
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024, // 1 MB
+        maxFileSize = 1024 * 1024 * 10,  // 10 MB
+        maxRequestSize = 1024 * 1024 * 15 // 15 MB
+)
 public class EditNoteServlet extends HttpServlet{
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException{
 
         String noteId = request.getParameter("noteId");
         String editType = request.getParameter("editType");
         String newContent = request.getParameter("newContent");
-
-        System.out.println("noteId" + noteId);
-        System.out.println("editType" + editType);
-        System.out.println("newContent" + newContent);
+        Part filePart = request.getPart("editImage");
 
         Model model = ModelFactory.getModel();
 
-        model.editNote(noteId, editType, newContent);
+        model.editNote(noteId, editType, newContent, filePart);
 
         //fetch new noteId
 
